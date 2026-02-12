@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>니케 가챠</title>
     <style>
-        /* [전체 레이아웃 중앙 정렬] */
+        /* [전체 레이아웃 및 중앙 정렬] */
         body { 
             background-color: #f4f4f4; 
             color: #333; 
@@ -31,7 +31,9 @@
         }
 
         .nav-bar span { cursor: pointer; }
+        .nav-bar span:hover { text-decoration: underline; }
         
+        /* 확률 한 줄 안내 */
         .prob-header {
             width: 100%;
             background: #fff;
@@ -53,7 +55,6 @@
             max-width: 1200px; 
         }
 
-        /* [가챠 컨테이너 및 결과창 정렬 핵심 수정] */
         .container { 
             width: 850px; 
             display: flex; 
@@ -61,35 +62,21 @@
             align-items: center; 
         }
 
+        /* [핵심 수정: 결과창 내부 카드 중앙 정렬] */
         .gacha-result { 
             display: grid; 
-            /* 카드 5개를 꽉 채우거나 중앙에 모이게 설정 */
             grid-template-columns: repeat(5, 145px); 
-            justify-content: center; /* 그리드 내부 아이템들을 가로 중앙으로! */
-            align-content: start;
-            gap: 15px; 
+            justify-content: center; /* 카드 뭉치를 가로 중앙으로 */
+            gap: 12px; 
             background: #fff; 
             border: 1px solid #ddd; 
-            padding: 25px; 
+            padding: 20px; 
             min-height: 480px; 
             width: 100%; 
             box-sizing: border-box;
             border-radius: 4px;
         }
 
-        /* [카드 스타일] */
-        .card { 
-            border: 1px solid #ddd; 
-            position: relative; 
-            width: 145px; 
-            height: 210px; 
-            display: flex; 
-            flex-direction: column; 
-            background: #fff; 
-            overflow: hidden; 
-        }
-
-        /* [기존 SSR 리스트 사이드바] */
         .ssr-sidebar { 
             width: 220px; 
             background: #fff; 
@@ -101,17 +88,21 @@
             box-sizing: border-box; 
         }
 
-        /* [모달 및 나머지 스타일 유지] */
+        /* [모달 스타일] */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background-color: #fff; padding: 30px; border-radius: 12px; width: 90%; max-width: 600px; line-height: 1.8; position: relative;}
+        .modal-content { background-color: #fff; padding: 30px; border-radius: 12px; width: 90%; max-width: 600px; line-height: 1.8; position: relative; }
+        .info-box { background: #f9f9f9; border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; }
-        
-        h1 { font-size: 32px; margin: 10px 0 20px 0; }
-        .controls { margin-bottom: 15px; }
+
+        /* [가챠 UI 스타일] */
+        h1 { font-size: 32px; margin: 10px 0 20px 0; text-align: center; }
+        .controls { margin-bottom: 15px; width: 100%; text-align: center; }
         select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 220px; font-weight: bold; }
         button { background-color: #222; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; }
         .status { border: 1px solid #eee; padding: 5px 15px; display: inline-block; font-size: 12px; color: #777; margin-bottom: 15px; background: #fafafa; border-radius: 10px; }
 
+        /* [카드 스타일 고정] */
+        .card { border: 1px solid #ddd; position: relative; width: 145px; aspect-ratio: 145/210; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
         .card-img { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
         .SSR .card-img { background: #ffcc80; border-bottom: 3px solid #ff8c00; }
         .SR .card-img { background: #ce93d8; border-bottom: 3px solid #9c27b0; }
@@ -120,11 +111,13 @@
         .SSR .grade-tag { color: #e65100; }
         .SR .grade-tag { color: #4a148c; }
         .R .grade-tag { color: #0d47a1; }
-        .card-info { padding: 8px 5px; background: white; text-align: center; }
-        .char-name { font-weight: bold; font-size: 11px; }
+        .card-info { padding: 8px 5px; background: white; min-height: 45px; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+        .char-name { font-weight: bold; font-size: 11px; color: #222; }
         .pickup-label { color: #ff4500; font-size: 10px; font-weight: bold; }
-        .bg-text { font-size: 70px; font-weight: 900; color: rgba(255,255,255,0.5); }
-        .ssr-box { background: #ffcc80; border: 1px solid #ff8c00; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .bg-text { font-size: 70px; font-weight: 900; color: rgba(255,255,255,0.5); pointer-events: none; }
+        
+        .ssr-sidebar h3 { font-size: 16px; margin-top: 0; border-bottom: 2px solid #ff8c00; padding-bottom: 5px; text-align: center; }
+        .ssr-box { background: #ffcc80; border: 1px solid #ff8c00; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-align: center; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;}
         .ssr-count { background: #e65100; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; }
     </style>
 </head>
@@ -142,8 +135,12 @@
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal()">&times;</span>
         <h2>사이트 정보 및 고지사항</h2>
-        <p>본 사이트는 개인이 운영하는 비영리 팬 사이트이며, (주)시프트업 및 Level Infinite와 공식 관련이 없습니다.</p>
-        <p>Liability: 시뮬레이션 결과는 실제 게임 내 수치와 차이가 있을 수 있습니다.</p>
+        <div class="info-box">
+            <p>본 사이트는 개인이 운영하는 비영리 팬 사이트이며, <b>(주)시프트업 및 Level Infinite</b>와 공식 관련이 없습니다.</p>
+        </div>
+        <div class="info-box">
+            <p><b>Liability:</b> 시뮬레이션 결과는 실제 게임 내 수치와 차이가 있을 수 있습니다.</p>
+        </div>
     </div>
 </div>
 
@@ -156,10 +153,16 @@
                 <option value="니시키기 치사토">니시키기 치사토</option>
                 <option value="이노우에 타키나">이노우에 타키나</option>
                 <option value="홍련: 흑영">홍련: 흑영</option>
+                <option value="스노우 화이트: 헤비 암즈">스노우 화이트: 헤비 암즈</option>
+                <option value="아니스: 스타라이트">아니스: 스타라이트</option>
+                <option value="라피: 레드 후드">라피: 레드 후드</option>
             </select>
-            <button onclick="pull(1)">1회</button>
-            <button onclick="pull(10)">10회</button>
-            <button onclick="resetGacha()" style="background-color: #555;">clear</button>
+            
+            <div class="btn-group" style="display: inline-flex; gap: 5px; margin-left: 10px;">
+                <button onclick="pull(1)">1회</button>
+                <button onclick="pull(10)">10회</button>
+                <button onclick="resetGacha()" style="background-color: #555;">clear</button>
+            </div>
         </div>
 
         <div class="status" id="stats">가챠: 0회 | SSR: 0회 | 픽업: 0회</div>
@@ -168,7 +171,7 @@
     </div>
 
     <div class="ssr-sidebar">
-        <h3 style="text-align:center;">SSR 획득 리스트</h3>
+        <h3>SSR 획득 리스트</h3>
         <div id="ssrHistory"></div>
     </div>
 </div>
@@ -182,6 +185,7 @@
     let pickupCount = 0;
     let ssrInventory = {};
 
+    // 로직 및 리스트 원상복구
     const rList = ["솔져 E.G.", "솔져 O.W.", "솔져 F.A.", "프로덕트 08", "프로덕트 12", "프로덕트 23", "iDoll 플라워", "iDoll 오션", "iDoll 썬"];
     const srList = ["미카", "벨로타", "아니스", "미하라", "N102", "에테르", "라피", "네온", "델타"];
 
@@ -207,6 +211,7 @@
             let rand = Math.random() * 100;
             let res = { grade: "", name: "", isPickup: false };
 
+            // 세부 확률 로직 원상복구
             if (rand <= 2.0) { 
                 res = { grade: "SSR", name: pickupName, isPickup: true };
                 ssrCount++; pickupCount++; updateSsrHistory(res.name);
@@ -225,14 +230,8 @@
             const card = document.createElement('div');
             card.className = `card ${res.grade}`;
             card.innerHTML = `
-                <div class="card-img">
-                    <div class="bg-text">${res.grade[0]}</div>
-                    <div class="grade-tag">${res.grade}</div>
-                </div>
-                <div class="card-info">
-                    <div class="char-name">${res.name}</div>
-                    ${res.isPickup ? '<div class="pickup-label">(픽업)</div>' : ''}
-                </div>
+                <div class="card-img"><div class="bg-text">${res.grade[0]}</div><div class="grade-tag">${res.grade}</div></div>
+                <div class="card-info"><div class="char-name">${res.name}</div>${res.isPickup ? '<div class="pickup-label">(픽업)</div>' : ''}</div>
             `;
             resultDiv.appendChild(card);
         }
