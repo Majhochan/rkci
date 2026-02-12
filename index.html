@@ -2,83 +2,152 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>니케 가챠 시뮬레이터</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>니케 가챠</title>
     <style>
-        body { background-color: #1a1a1a; color: white; text-align: center; font-family: sans-serif; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-        .gacha-result { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 30px; }
+        body { background-color: #ffffff; color: #333; text-align: center; font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; }
+        .nav-bar { background-color: #00ced1; color: black; padding: 10px; display: flex; gap: 20px; font-size: 14px; font-weight: bold; }
         
-        /* 카드 스타일 */
-        .card {
-            width: 150px; height: 250px;
-            border: 2px solid #555; border-radius: 10px;
-            overflow: hidden; position: relative;
-            background-color: #333; transition: transform 0.2s;
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+        
+        h1 { font-size: 40px; margin-bottom: 10px; }
+        .description { color: #666; line-height: 1.6; margin-bottom: 20px; }
+        
+        /* 컨트롤 섹션 */
+        .controls { margin-bottom: 20px; }
+        select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; vertical-align: middle; }
+        .btn-group { display: inline-flex; gap: 5px; vertical-align: middle; margin-left: 10px; }
+        button { background-color: #222; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: #444; }
+        
+        /* 가챠 통계 */
+        .status { border: 1px solid #eee; padding: 5px 15px; display: inline-block; font-size: 13px; color: #777; margin-bottom: 20px; }
+
+        /* 결과 창 (스크롤 가능하도록 설정) */
+        .gacha-result { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 15px; 
+            background: #fff; 
+            border: 1px solid #ddd; 
+            padding: 20px; 
+            min-height: 500px;
         }
-        .card:hover { transform: scale(1.05); }
-        .card-img { width: 100%; height: 80%; background-color: #222; display: flex; align-items: center; justify-content: center; }
-        .card-info { padding: 10px; font-weight: bold; }
         
-        /* 등급별 색상 */
-        .SSR { border-color: #ff8c00; box-shadow: 0 0 10px #ff8c00; }
-        .SR { border-color: #9370db; }
-        .R { border-color: #4682b4; }
+        /* 카드 디자인 */
+        .card { border: 1px solid #ddd; position: relative; height: 320px; display: flex; flex-direction: column; }
+        .card-img { flex: 1; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .card-img img { width: 100%; height: 100%; object-fit: cover; }
         
-        .btn-gacha {
-            padding: 15px 40px; font-size: 20px; cursor: pointer;
-            background-color: #f3ae1a; border: none; border-radius: 5px; font-weight: bold;
-        }
+        /* 등급별 오버레이 */
+        .grade-tag { position: absolute; top: 5px; left: 5px; font-weight: bold; font-size: 18px; z-index: 10; }
+        .SSR .grade-tag { color: #f3ae1a; }
+        .SR .grade-tag { color: #9370db; }
+        .R .grade-tag { color: #4682b4; }
+        
+        .card-info { padding: 15px; border-top: 1px solid #eee; background: white; }
+        .char-name { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
+        .pickup-label { color: #ff4500; font-size: 12px; }
+
+        /* N 배경 글자 (이미지처럼 구현) */
+        .bg-text { position: absolute; font-size: 120px; font-weight: 900; color: rgba(0,0,0,0.05); top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; }
     </style>
 </head>
 <body>
 
+<div class="nav-bar">
+    <span>GACHA</span> <span>Character</span> <span>Equipment</span> <span>Dolls</span> <span>사이트정보</span>
+</div>
+
 <div class="container">
-    <h1>NIKKE GACHA SIMULATOR</h1>
-    <button class="btn-gacha" onclick="pullGacha(10)">10연차 뽑기!</button>
+    <h1>니시키기 치사토 픽업 중</h1>
+    <div class="description">
+        현재 "니시키기 치사토" 픽업 진행 중! <br>
+        확률 : SSR 4% / SR 43% / R 53%<br>
+        픽업확률 : 픽업 2% / 필그림 1% / 통상 1%
+    </div>
+
+    <div class="controls">
+        <select id="pickupSelect">
+            <option value="니시키기 치사토">니시키기 치사토</option>
+            <option value="이노우에 타키나">이노우에 타키나</option>
+            <option value="홍련:흑영">홍련:흑영 (필그림)</option>
+            <option value="스노우 화이트: 헤비암즈">스노우 화이트: 헤비암즈 (필그림)</option>
+            <option value="아니스: 아크스타">아니스: 아크스타</option>
+            <option value="라피: 레드후드">라피: 레드후드</option>
+        </select>
+        
+        <div class="btn-group">
+            <button onclick="pull(1)">1회</button>
+            <button onclick="pull(10)">10회</button>
+            <button onclick="resetGacha()" style="background-color: #555;">clear</button>
+        </div>
+    </div>
+
+    <div class="status" id="stats">
+        가챠: 0회 | SSR등장: 0회 | 픽업등장: 0회
+    </div>
+
     <div id="result" class="gacha-result">
         </div>
 </div>
 
 <script>
-    function pullGacha(times) {
+    let totalCount = 0;
+    let ssrCount = 0;
+    let pickupCount = 0;
+
+    function pull(times) {
         const resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = ''; // 이전 결과 삭제
+        const pickupName = document.getElementById('pickupSelect').value;
+        if(times === 10) resultDiv.innerHTML = ''; // 10연차 시 초기화
 
         for (let i = 0; i < times; i++) {
+            totalCount++;
             const rand = Math.random() * 100;
-            let grade = "";
-            let name = "";
+            let res = { grade: "R", name: "일반 R 캐릭터", isPickup: false };
 
             if (rand <= 2) {
-                grade = "SSR"; name = "픽업 캐릭터 (2%)";
+                res = { grade: "SSR", name: pickupName, isPickup: true };
+                ssrCount++; pickupCount++;
             } else if (rand <= 3) {
-                grade = "SSR"; name = "필그림 (1%)";
+                res = { grade: "SSR", name: "필그림 캐릭터", isPickup: false };
+                ssrCount++;
             } else if (rand <= 4) {
-                grade = "SSR"; name = "일반 SSR (1%)";
+                res = { grade: "SSR", name: "통상 SSR 캐릭터", isPickup: false };
+                ssrCount++;
             } else if (rand <= 47) {
-                grade = "SR"; name = "SR 캐릭터";
-            } else {
-                grade = "R"; name = "R 캐릭터";
+                res = { grade: "SR", name: "일반 SR 캐릭터", isPickup: false };
             }
 
-            createCard(grade, name);
+            const card = document.createElement('div');
+            card.className = `card ${res.grade}`;
+            card.innerHTML = `
+                <div class="card-img">
+                    <div class="bg-text">${res.grade[0]}</div>
+                    <div class="grade-tag">${res.grade}</div>
+                    </div>
+                <div class="card-info">
+                    <div class="char-name">${res.name}</div>
+                    ${res.isPickup ? '<div class="pickup-label">(픽업)</div>' : ''}
+                </div>
+            `;
+            resultDiv.appendChild(card);
         }
+        updateStats();
     }
 
-    function createCard(grade, name) {
-        const resultDiv = document.getElementById('result');
-        const card = document.createElement('div');
-        card.className = `card ${grade}`;
-        
-        card.innerHTML = `
-            <div class="card-img">이미지 영역</div>
-            <div class="card-info">
-                <div>${grade}</div>
-                <div style="font-size: 12px;">${name}</div>
-            </div>
-        `;
-        resultDiv.appendChild(card);
+    function updateStats() {
+        document.getElementById('stats').innerText = 
+            `가챠: ${totalCount}회 | SSR등장: ${ssrCount}회 | 픽업등장: ${pickupCount}회`;
+    }
+
+    function resetGacha() {
+        totalCount = 0; ssrCount = 0; pickupCount = 0;
+        document.getElementById('result').innerHTML = '';
+        updateStats();
     }
 </script>
+
 </body>
 </html>
