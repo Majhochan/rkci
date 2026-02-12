@@ -7,20 +7,45 @@
     <style>
         body { background-color: #f4f4f4; color: #333; text-align: center; font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; }
         .nav-bar { background-color: #00ced1; color: black; padding: 10px; display: flex; gap: 20px; font-size: 14px; font-weight: bold; }
-        .container { max-width: 950px; margin: 0 auto; padding: 20px 10px; }
         
+        /* 레이아웃 수정: 메인과 사이드바를 감싸는 컨테이너 */
+        .main-wrapper { display: flex; max-width: 1200px; margin: 0 auto; padding: 20px; gap: 20px; justify-content: center; }
+        
+        .container { flex: 1; max-width: 850px; }
+        
+        /* 우측 SSR 획득 리스트 공간 */
+        .ssr-sidebar { 
+            width: 200px; 
+            background: #fff; 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            border-radius: 8px; 
+            min-height: 500px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .ssr-sidebar h3 { font-size: 16px; margin-top: 0; border-bottom: 2px solid #ff8c00; padding-bottom: 5px; }
+        #ssrHistory { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        
+        /* 우측 리스트용 작은 박스 */
+        .ssr-box { 
+            background: #ffcc80; 
+            border: 1px solid #ff8c00; 
+            padding: 8px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            font-weight: bold; 
+            text-align: center; 
+            animation: fadeIn 0.3s ease;
+        }
+
         h1 { font-size: 32px; margin: 10px 0; }
         .description { color: #666; line-height: 1.4; margin-bottom: 15px; font-size: 13px; }
-        
         .controls { margin-bottom: 15px; }
-        /* 픽업 선택창 너비 조절 */
         select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 220px; font-weight: bold; }
         .btn-group { display: inline-flex; gap: 5px; margin-left: 10px; }
         button { background-color: #222; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        
         .status { border: 1px solid #eee; padding: 5px 15px; display: inline-block; font-size: 12px; color: #777; margin-bottom: 15px; background: #fafafa; border-radius: 10px; }
 
-        /* 가챠 결과 영역 (5열) */
         .gacha-result { 
             display: grid; 
             grid-template-columns: repeat(5, 1fr); 
@@ -32,43 +57,24 @@
             justify-items: center;
         }
         
-        /* 카드 디자인 (이미지 없을 때 대비) */
-        .card { 
-            border: 1px solid #ddd; 
-            position: relative; 
-            width: 155px; 
-            height: 230px; 
-            display: flex; 
-            flex-direction: column; 
-            background: #fff; 
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .card-img { 
-            flex: 1; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            position: relative; 
-        }
+        .card { border: 1px solid #ddd; position: relative; width: 145px; height: 210px; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
+        .card-img { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
 
-        /* 등급별 배경 강조 */
         .SSR .card-img { background: #ffcc80; border-bottom: 3px solid #ff8c00; }
         .SR .card-img { background: #ce93d8; border-bottom: 3px solid #9c27b0; }
         .R .card-img { background: #90caf9; border-bottom: 3px solid #2196f3; }
 
-        .grade-tag { position: absolute; top: 8px; left: 10px; font-weight: 900; font-size: 22px; z-index: 10; }
+        .grade-tag { position: absolute; top: 8px; left: 10px; font-weight: 900; font-size: 20px; z-index: 10; }
         .SSR .grade-tag { color: #e65100; }
         .SR .grade-tag { color: #4a148c; }
         .R .grade-tag { color: #0d47a1; }
         
-        .card-info { padding: 10px 5px; background: white; min-height: 50px; display: flex; flex-direction: column; justify-content: center; }
-        .char-name { font-weight: bold; font-size: 13px; color: #222; }
-        .pickup-label { color: #ff4500; font-size: 11px; font-weight: bold; margin-top: 3px; }
+        .card-info { padding: 8px 5px; background: white; min-height: 40px; display: flex; flex-direction: column; justify-content: center; }
+        .char-name { font-weight: bold; font-size: 12px; color: #222; }
+        .pickup-label { color: #ff4500; font-size: 10px; font-weight: bold; }
+        .bg-text { font-size: 70px; font-weight: 900; color: rgba(255,255,255,0.5); pointer-events: none; }
 
-        /* 카드 중앙에 크게 표시될 등급 텍스트 */
-        .bg-text { font-size: 80px; font-weight: 900; color: rgba(255,255,255,0.5); pointer-events: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -77,34 +83,42 @@
     <span>GACHA</span> <span>Character</span> <span>Equipment</span> <span>Dolls</span>
 </div>
 
-<div class="container">
-    <h1>치사토 픽업 중</h1>
-    <div class="description">
-        확률 : SSR 4% (픽업 2% / 필그림 1% / 통상 1%) | SR 43% | R 53%
-    </div>
-
-    <div class="controls">
-        <select id="pickupSelect">
-            <option value="니시키기 치사토">니시키기 치사토</option>
-            <option value="이노우에 타키나">이노우에 타키나</option>
-            <option value="홍련: 흑영">홍련: 흑영</option>
-            <option value="스노우 화이트: 헤비 암즈">스노우 화이트: 헤비 암즈</option>
-            <option value="아니스: 스타라이트">아니스: 스타라이트</option>
-            <option value="라피: 레드 후드">라피: 레드 후드</option>
-        </select>
-        
-        <div class="btn-group">
-            <button onclick="pull(1)">1회</button>
-            <button onclick="pull(10)">10회</button>
-            <button onclick="resetGacha()" style="background-color: #555;">clear</button>
+<div class="main-wrapper">
+    <div class="container">
+        <h1>치사토 픽업 중</h1>
+        <div class="description">
+            확률 : SSR 4% (픽업 2% / 필그림 1% / 통상 1%) | SR 43% | R 53%
         </div>
+
+        <div class="controls">
+            <select id="pickupSelect">
+                <option value="니시키기 치사토">니시키기 치사토</option>
+                <option value="이노우에 타키나">이노우에 타키나</option>
+                <option value="홍련: 흑영">홍련: 흑영</option>
+                <option value="스노우 화이트: 헤비 암즈">스노우 화이트: 헤비 암즈</option>
+                <option value="아니스: 스타라이트">아니스: 스타라이트</option>
+                <option value="라피: 레드 후드">라피: 레드 후드</option>
+            </select>
+            
+            <div class="btn-group">
+                <button onclick="pull(1)">1회</button>
+                <button onclick="pull(10)">10회</button>
+                <button onclick="resetGacha()" style="background-color: #555;">clear</button>
+            </div>
+        </div>
+
+        <div class="status" id="stats">
+            가챠: 0회 | SSR: 0회 | 픽업: 0회
+        </div>
+
+        <div id="result" class="gacha-result"></div>
     </div>
 
-    <div class="status" id="stats">
-        가챠: 0회 | SSR: 0회 | 픽업: 0회
+    <div class="ssr-sidebar">
+        <h3>SSR 획득 리스트</h3>
+        <div id="ssrHistory">
+            </div>
     </div>
-
-    <div id="result" class="gacha-result"></div>
 </div>
 
 <script>
@@ -112,7 +126,6 @@
     let ssrCount = 0;
     let pickupCount = 0;
 
-    // 캐릭터 데이터베이스
     const rList = ["솔져 E.G.", "솔져 O.W.", "솔져 F.A.", "프로덕트 08", "프로덕트 12", "프로덕트 23", "iDoll 플라워", "iDoll 오션", "iDoll 썬"];
     const srList = ["미카", "벨로타", "아니스", "미하라", "N102", "에테르", "라피", "네온", "델타"];
     const standardSsrList = ["리타", "센티", "홍련", "모더니아", "앨리스", "누아르", "블랑"];
@@ -121,11 +134,20 @@
         return list[Math.floor(Math.random() * list.length)];
     }
 
+    // SSR 기록을 우측에 추가하는 함수
+    function addSsrToHistory(name) {
+        const historyDiv = document.getElementById('ssrHistory');
+        const box = document.createElement('div');
+        box.className = 'ssr-box';
+        box.innerText = name;
+        historyDiv.prepend(box); // 최신 획득이 위로 오게 함
+    }
+
     function pull(times) {
         const resultDiv = document.getElementById('result');
         const pickupName = document.getElementById('pickupSelect').value;
         
-        resultDiv.innerHTML = ''; // 화면 초기화
+        resultDiv.innerHTML = ''; 
 
         for (let i = 0; i < times; i++) {
             totalCount++;
@@ -135,12 +157,15 @@
             if (rand <= 2) { 
                 res = { grade: "SSR", name: pickupName, isPickup: true };
                 ssrCount++; pickupCount++;
+                addSsrToHistory(res.name); // 기록 추가
             } else if (rand <= 3) { 
                 res = { grade: "SSR", name: "필그림 캐릭터", isPickup: false };
                 ssrCount++;
+                addSsrToHistory(res.name); // 기록 추가
             } else if (rand <= 4) { 
                 res = { grade: "SSR", name: getRandom(standardSsrList), isPickup: false };
                 ssrCount++;
+                addSsrToHistory(res.name); // 기록 추가
             } else if (rand <= 47) { 
                 res = { grade: "SR", name: getRandom(srList), isPickup: false };
             } else { 
@@ -171,6 +196,7 @@
     function resetGacha() {
         totalCount = 0; ssrCount = 0; pickupCount = 0;
         document.getElementById('result').innerHTML = '';
+        document.getElementById('ssrHistory').innerHTML = ''; // 우측 기록도 초기화
         updateStats();
     }
 </script>
