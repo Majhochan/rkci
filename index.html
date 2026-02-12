@@ -7,23 +7,17 @@
     <style>
         body { background-color: #ffffff; color: #333; text-align: center; font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; }
         .nav-bar { background-color: #00ced1; color: black; padding: 10px; display: flex; gap: 20px; font-size: 14px; font-weight: bold; }
-        
         .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
-        
         h1 { font-size: 40px; margin-bottom: 10px; }
-        .description { color: #666; line-height: 1.6; margin-bottom: 20px; }
-        
-        /* 컨트롤 섹션 */
+        .description { color: #666; line-height: 1.6; margin-bottom: 20px; font-size: 14px; }
         .controls { margin-bottom: 20px; }
-        select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; vertical-align: middle; }
+        select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; vertical-align: middle; width: 150px; }
         .btn-group { display: inline-flex; gap: 5px; vertical-align: middle; margin-left: 10px; }
-        button { background-color: #222; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; }
+        button { background-color: #222; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; }
         button:hover { background-color: #444; }
-        
-        /* 가챠 통계 */
-        .status { border: 1px solid #eee; padding: 5px 15px; display: inline-block; font-size: 13px; color: #777; margin-bottom: 20px; }
+        .status { border: 1px solid #eee; padding: 5px 15px; display: inline-block; font-size: 13px; color: #777; margin-bottom: 20px; background: #fafafa; }
 
-        /* 결과 창 (스크롤 가능하도록 설정) */
+        /* 가챠 결과 영역 */
         .gacha-result { 
             display: grid; 
             grid-template-columns: repeat(5, 1fr); 
@@ -31,26 +25,25 @@
             background: #fff; 
             border: 1px solid #ddd; 
             padding: 20px; 
-            min-height: 500px;
+            min-height: 400px;
         }
         
         /* 카드 디자인 */
-        .card { border: 1px solid #ddd; position: relative; height: 320px; display: flex; flex-direction: column; }
-        .card-img { flex: 1; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-        .card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .card { border: 1px solid #ddd; position: relative; height: 320px; display: flex; flex-direction: column; background: #fff; }
+        .card-img { flex: 1; background-color: #f9f9f9; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
         
-        /* 등급별 오버레이 */
-        .grade-tag { position: absolute; top: 5px; left: 5px; font-weight: bold; font-size: 18px; z-index: 10; }
-        .SSR .grade-tag { color: #f3ae1a; }
+        /* 등급별 텍스트 및 효과 */
+        .grade-tag { position: absolute; top: 10px; left: 10px; font-weight: bold; font-size: 20px; z-index: 10; }
+        .SSR .grade-tag { color: #ff8c00; }
         .SR .grade-tag { color: #9370db; }
         .R .grade-tag { color: #4682b4; }
         
-        .card-info { padding: 15px; border-top: 1px solid #eee; background: white; }
-        .char-name { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
-        .pickup-label { color: #ff4500; font-size: 12px; }
+        .card-info { padding: 15px; border-top: 1px solid #eee; min-height: 60px; display: flex; flex-direction: column; justify-content: center; }
+        .char-name { font-weight: bold; font-size: 15px; color: #222; }
+        .pickup-label { color: #ff4500; font-size: 11px; margin-top: 4px; font-weight: bold; }
 
-        /* N 배경 글자 (이미지처럼 구현) */
-        .bg-text { position: absolute; font-size: 120px; font-weight: 900; color: rgba(0,0,0,0.05); top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; }
+        /* 배경 대문자 알파벳 */
+        .bg-text { position: absolute; font-size: 150px; font-weight: 900; color: rgba(0,0,0,0.03); top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -60,9 +53,10 @@
 </div>
 
 <div class="container">
-    <h1>니시키기 치사토 픽업 중</h1>
+    <h1>치사토 픽업 중</h1>
     <div class="description">
-        현재 "니시키기 치사토" 픽업 진행 중! <br>
+        현재 "니시키기 치사토" 픽업 진행 중!<br>
+        각 뽑기는 10연차 입니다.<br>
         확률 : SSR 4% / SR 43% / R 53%<br>
         픽업확률 : 픽업 2% / 필그림 1% / 통상 1%
     </div>
@@ -71,10 +65,10 @@
         <select id="pickupSelect">
             <option value="니시키기 치사토">니시키기 치사토</option>
             <option value="이노우에 타키나">이노우에 타키나</option>
-            <option value="홍련:흑영">홍련:흑영 (필그림)</option>
-            <option value="스노우 화이트: 헤비암즈">스노우 화이트: 헤비암즈 (필그림)</option>
-            <option value="아니스: 아크스타">아니스: 아크스타</option>
-            <option value="라피: 레드후드">라피: 레드후드</option>
+            <option value="홍련: 흑영">홍련: 흑영</option>
+            <option value="스노우 화이트: 헤비 암즈">스노우 화이트: 헤비 암즈</option>
+            <option value="아니스: 스타라이트">아니스: 스타라이트</option>
+            <option value="라피: 레드 후드">라피: 레드 후드</option>
         </select>
         
         <div class="btn-group">
@@ -97,27 +91,38 @@
     let ssrCount = 0;
     let pickupCount = 0;
 
+    // 캐릭터 데이터베이스
+    const rList = ["솔져 E.G.", "솔져 O.W.", "솔져 F.A.", "프로덕트 08", "프로덕트 12", "프로덕트 23", "iDoll 플라워", "iDoll 오션", "iDoll 썬"];
+    const srList = ["미카", "벨로타", "아니스", "미하라", "N102", "에테르", "라피", "네온", "델타"];
+    const standardSsrList = ["리타", "센티", "홍련", "모더니아", "앨리스", "누아르", "블랑"];
+
+    function getRandom(list) {
+        return list[Math.floor(Math.random() * list.length)];
+    }
+
     function pull(times) {
         const resultDiv = document.getElementById('result');
         const pickupName = document.getElementById('pickupSelect').value;
-        if(times === 10) resultDiv.innerHTML = ''; // 10연차 시 초기화
+        if(times === 10) resultDiv.innerHTML = ''; 
 
         for (let i = 0; i < times; i++) {
             totalCount++;
             const rand = Math.random() * 100;
-            let res = { grade: "R", name: "일반 R 캐릭터", isPickup: false };
+            let res = { grade: "", name: "", isPickup: false };
 
-            if (rand <= 2) {
+            if (rand <= 2) { // 픽업 SSR (2%)
                 res = { grade: "SSR", name: pickupName, isPickup: true };
                 ssrCount++; pickupCount++;
-            } else if (rand <= 3) {
+            } else if (rand <= 3) { // 필그림 (1%)
                 res = { grade: "SSR", name: "필그림 캐릭터", isPickup: false };
                 ssrCount++;
-            } else if (rand <= 4) {
-                res = { grade: "SSR", name: "통상 SSR 캐릭터", isPickup: false };
+            } else if (rand <= 4) { // 일반 SSR (1%)
+                res = { grade: "SSR", name: getRandom(standardSsrList), isPickup: false };
                 ssrCount++;
-            } else if (rand <= 47) {
-                res = { grade: "SR", name: "일반 SR 캐릭터", isPickup: false };
+            } else if (rand <= 47) { // SR (43%)
+                res = { grade: "SR", name: getRandom(srList), isPickup: false };
+            } else { // R (53%)
+                res = { grade: "R", name: getRandom(rList), isPickup: false };
             }
 
             const card = document.createElement('div');
@@ -126,7 +131,7 @@
                 <div class="card-img">
                     <div class="bg-text">${res.grade[0]}</div>
                     <div class="grade-tag">${res.grade}</div>
-                    </div>
+                </div>
                 <div class="card-info">
                     <div class="char-name">${res.name}</div>
                     ${res.isPickup ? '<div class="pickup-label">(픽업)</div>' : ''}
