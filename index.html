@@ -5,30 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>니케 가챠</title>
     <style>
-        /* [중앙 정렬 및 기본 스타일 유지] */
-        body { background-color: #f4f4f4; color: #333; text-align: center; font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
-        .nav-bar { background-color: #00ced1; color: black; padding: 10px; display: flex; gap: 20px; font-size: 14px; font-weight: bold; width: 100%; justify-content: flex-start; box-sizing: border-box; }
-        .main-wrapper { display: inline-flex; margin: 0 auto; padding: 40px 20px; gap: 20px; text-align: left; align-items: flex-start; }
-        .container { width: 850px; }
-        .ssr-sidebar { width: 220px; background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; min-height: 550px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); box-sizing: border-box; }
-        .ssr-sidebar h3 { font-size: 16px; margin-top: 0; border-bottom: 2px solid #ff8c00; padding-bottom: 5px; text-align: center; }
-        #ssrHistory { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-        .ssr-box { background: #ffcc80; border: 1px solid #ff8c00; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-align: center; display: flex; justify-content: space-between; align-items: center; }
-        .ssr-count { background: #e65100; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 5px; }
+        /* 1. 전체 레이아웃을 화면 정중앙으로 배치 */
+        body { 
+            background-color: #f4f4f4; 
+            color: #333; 
+            font-family: 'Malgun Gothic', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; /* 가로 중앙 정렬 */
+            min-height: 100vh;
+        }
 
-        /* [텍스트 스타일] */
-        h1, .description, .controls, .status-container { text-align: center; }
-        .description { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; color: #444; font-size: 12px; line-height: 1.6; }
-        h1 { font-size: 32px; margin: 10px 0; }
-        .controls { margin-bottom: 15px; }
+        .nav-bar { 
+            background-color: #00ced1; 
+            color: black; 
+            padding: 10px 20px; 
+            display: flex; 
+            gap: 20px; 
+            font-size: 14px; 
+            font-weight: bold; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        
+        /* 2. 가챠판과 리스트를 감싸는 박스 정렬 수정 */
+        .main-wrapper { 
+            display: flex; 
+            justify-content: center; /* 내부 요소들을 중앙으로 모음 */
+            align-items: flex-start;
+            gap: 20px; 
+            padding: 40px 20px;
+            width: 100%; /* 부모 너비를 다 쓰면서 내부에서 정렬 */
+            max-width: 1200px; /* 너무 퍼지지 않게 한계 지정 */
+        }
+
+        /* 왼쪽 가챠 컨테이너 */
+        .container { 
+            width: 850px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        /* 오른쪽 사이드바 */
+        .ssr-sidebar { 
+            width: 220px; 
+            background: #fff; 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            border-radius: 8px; 
+            min-height: 600px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            box-sizing: border-box; 
+        }
+
+        /* [텍스트 및 컨트롤 중앙 정렬] */
+        h1 { font-size: 32px; margin: 10px 0; text-align: center; }
+        .description { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+            margin-bottom: 20px; 
+            color: #444; 
+            font-size: 12px; 
+            line-height: 1.6; 
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        
+        .controls { margin-bottom: 15px; width: 100%; text-align: center; }
         select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 220px; font-weight: bold; }
         .btn-group { display: inline-flex; gap: 5px; margin-left: 10px; }
         button { background-color: #222; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        
+        .status-container { width: 100%; text-align: center; }
         .status { border: 1px solid #eee; padding: 5px 15px; display: inline-block; font-size: 12px; color: #777; margin-bottom: 15px; background: #fafafa; border-radius: 10px; }
 
-        /* [가챠 카드 스타일] */
-        .gacha-result { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; background: #fff; border: 1px solid #ddd; padding: 20px; min-height: 250px; justify-items: center; }
-        .card { border: 1px solid #ddd; position: relative; width: 145px; height: 210px; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
+        /* [결과창 그리드] */
+        .gacha-result { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 12px; 
+            background: #fff; 
+            border: 1px solid #ddd; 
+            padding: 20px; 
+            min-height: 480px; 
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .card { border: 1px solid #ddd; position: relative; width: 100%; aspect-ratio: 145/210; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
         .card-img { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
         .SSR .card-img { background: #ffcc80; border-bottom: 3px solid #ff8c00; }
         .SR .card-img { background: #ce93d8; border-bottom: 3px solid #9c27b0; }
@@ -37,10 +107,16 @@
         .SSR .grade-tag { color: #e65100; }
         .SR .grade-tag { color: #4a148c; }
         .R .grade-tag { color: #0d47a1; }
-        .card-info { padding: 8px 5px; background: white; min-height: 40px; display: flex; flex-direction: column; justify-content: center; }
+        .card-info { padding: 8px 5px; background: white; min-height: 45px; display: flex; flex-direction: column; justify-content: center; text-align: center; }
         .char-name { font-weight: bold; font-size: 11px; color: #222; }
         .pickup-label { color: #ff4500; font-size: 10px; font-weight: bold; }
         .bg-text { font-size: 70px; font-weight: 900; color: rgba(255,255,255,0.5); pointer-events: none; }
+
+        /* [우측 SSR 리스트 박스] */
+        .ssr-sidebar h3 { font-size: 16px; margin-top: 0; border-bottom: 2px solid #ff8c00; padding-bottom: 5px; text-align: center; }
+        #ssrHistory { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .ssr-box { background: #ffcc80; border: 1px solid #ff8c00; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-align: center; display: flex; justify-content: space-between; align-items: center; }
+        .ssr-count { background: #e65100; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; }
     </style>
 </head>
 <body>
@@ -53,9 +129,6 @@
     <div class="container">
         <h1>치사토 픽업 중</h1>
         <div class="description">
-            <b>[상세 확률]</b><br>
-            픽업 캐릭터: 2.0000% | 필그림(19종): 각 0.0263% (총 약 0.5%) | 일반 SSR(93종): 각 0.0161% (총 약 1.5%)<br>
-            SR 캐릭터(9종): 각 4.7778% (총 43%) | R 캐릭터(9종): 각 5.8889% (총 53%)
         </div>
 
         <div class="controls">
@@ -94,23 +167,13 @@
     let pickupCount = 0;
     let ssrInventory = {};
 
-    // 데이터 정의
     const rList = ["솔져 E.G.", "솔져 O.W.", "솔져 F.A.", "프로덕트 08", "프로덕트 12", "프로덕트 23", "iDoll 플라워", "iDoll 오션", "iDoll 썬"];
     const srList = ["미카", "벨로타", "아니스", "미하라", "N102", "에테르", "라피", "네온", "델타"];
-    
-    // 사용자님이 주신 정밀 확률 기반 (0~100 사이의 누적 확률 기준값 계산)
-    // 픽업: 2% (0~2)
-    // 필그림: 19종 * 0.0263% = 약 0.5% (2~2.5)
-    // 일반 SSR: 93종 * 0.0161% = 약 1.5% (2.5~4)
-    // SR: 9종 * 4.7778% = 약 43% (4~47)
-    // R: 9종 * 5.8889% = 약 53% (47~100)
 
     function updateSsrHistory(name) {
         const historyDiv = document.getElementById('ssrHistory');
         ssrInventory[name] = (ssrInventory[name] || 0) + 1;
         historyDiv.innerHTML = '';
-        
-        // 획득한 순서대로 유지하면서 수량 표시
         for (let charName in ssrInventory) {
             const box = document.createElement('div');
             box.className = 'ssr-box';
@@ -134,11 +197,11 @@
                 ssrCount++; pickupCount++;
                 updateSsrHistory(res.name);
             } else if (rand <= 2.5) { 
-                res = { grade: "SSR", name: "필그림 (19종 중 1개)", isPickup: false };
+                res = { grade: "SSR", name: "필그림 캐릭터", isPickup: false };
                 ssrCount++;
                 updateSsrHistory(res.name);
             } else if (rand <= 4.0) { 
-                res = { grade: "SSR", name: "일반 SSR (93종 중 1개)", isPickup: false };
+                res = { grade: "SSR", name: "일반 SSR", isPickup: false };
                 ssrCount++;
                 updateSsrHistory(res.name);
             } else if (rand <= 47.0) { 
